@@ -16,4 +16,35 @@ describe('Reservation Schema', function(){
             should.not.exist(Reservation.combineDateTime(date, time));
         });
     });
+
+    context("Validator", function(){
+        it("should pass a valid reservation with no optional fields", function(done){
+            const reservation = new Reservation({
+                date: '2017/06/10',
+                time: '06:02 AM',
+                party: 3,
+                name: 'Julio',
+                email: "mail@email.com"
+            })
+
+            reservation.validator(function(error, value){
+                value.should.deep.equal(reservation);
+                done(error);
+            });
+        });
+        it("should faild a reservation with a invalid email", function(done){
+            const reservation = new Reservation({
+                date: '2017/06/10',
+                time: '06:02 AM',
+                party: 3,
+                name: 'Julio',
+                email: "regre3243"
+            })
+
+            reservation.validator(function(error){
+                error.should.be.an('error').and.not.be.null;
+                done();
+            });
+        });
+    });
 });
