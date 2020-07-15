@@ -1,9 +1,21 @@
 const chai = require('chai');
 const should = chai.should();
 const Reservation = require("../../../lib/schema/reservation");
-const reservations = require("../../../lib/reservations");
+const proxyquire = require("proxyquire");
+const sinon = require("sinon");
 
 describe("Reservation library", function(){
+    const debugStub = function(){
+        return sinon.stub();
+    }
+    let reservations;
+
+    before(function(){
+        reservations = proxyquire("../../../lib/reservations", {
+            debug: debugStub
+        });
+    });
+
     context("Validate", function(){
         it("should pass a valid reservation with no optional fields", function(){
             const reservation = new Reservation({
