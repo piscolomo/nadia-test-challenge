@@ -3,6 +3,7 @@ const should = chai.should();
 const Reservation = require("../../../lib/schema/reservation");
 const proxyquire = require("proxyquire");
 const sinon = require("sinon");
+const db = require("sqlite");
 
 describe("Reservation library", function(){
     const debugStub = function(){
@@ -24,7 +25,7 @@ describe("Reservation library", function(){
                 party: 3,
                 name: 'Julio',
                 email: "mail@email.com"
-            })
+            });
 
             return reservations.validate(reservation)
                 .then(actual => actual.should.deep.equal(reservation));
@@ -41,6 +42,42 @@ describe("Reservation library", function(){
 
             return reservations.validate(reservation)
                 .catch(error => error.should.be.an('error').and.not.be.null);
+        });
+    });
+
+    context("Create", function(){
+        let dbStub;
+
+        before(function(){
+            dbStub = sinon.stub(db,'run').resolves({
+                stmt: {
+                    lastID: 1349
+                }
+            });
+            reservations = proxyquire("../../../lib/reservations", {
+                debug: debugStub,
+                sqlite: dbStub
+            });
+        });
+
+        after(function(){
+            dbStub.restore();
+        });
+
+        it("should return the created reservation ID", function(done){
+            const reservation = new Reservation({
+                date: '2017/06/10',
+                time: '06:02 AM',
+                party: 3,
+                name: 'Julio',
+                email: "mail@email.com"
+            });
+
+            reservations.create(reservation)
+                .then(lastID => {
+                    lastID.should.deep.equal(1349);
+                    done();
+                }).catch(error => done(error));
         });
     });
 });
